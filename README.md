@@ -10,11 +10,11 @@ This project was developed as part of a **Computer Organization and Architecture
 
 ## CPU Simulator Interface
 
-![CPU Simulator](COA%20PBL/Screenshots/image2.png)
+![CPU Simulator](COA%20PBL/Screenshots/image1.png)
 
 ## Performance Analysis Dashboard
 
-![Performance Analysis](COA%20PBL/Screenshots/image1.png)
+![Performance Analysis](COA%20PBL/Screenshots/image2.png)
 
 
 ---
