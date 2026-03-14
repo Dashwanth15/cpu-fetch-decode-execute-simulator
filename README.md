@@ -101,12 +101,15 @@ Arduino
 Tinkercad Circuits  
 
 ---
+
 ## Project Structure
+
+```
 COA PBL
 │
 ├── Screenshots
-│ ├── image1.png
-│ └── image2.png
+│   ├── image1.png
+│   └── image2.png
 │
 ├── backend
 ├── frontend
@@ -122,6 +125,9 @@ COA PBL
 │
 ├── LICENSE
 └── README.md
+```
+
+---
 
 ## Installation and Running the Project
 
