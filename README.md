@@ -100,6 +100,27 @@ Arduino
 Tinkercad Circuits  
 
 ---
+## Project Structure
+COA PBL
+│
+├── Screenshots
+│ ├── image1.png
+│ └── image2.png
+│
+├── backend
+├── frontend
+│
+├── cpu_simulator.py
+├── main.py
+├── requirements.txt
+│
+├── err.txt
+├── out.txt
+├── out2.txt
+├── simulation_output.txt
+│
+├── LICENSE
+└── README.md
 
 ## Installation and Running the Project
 
@@ -162,5 +183,5 @@ https://github.com/Dashwanth15
 This project is released under the **MIT License**.
 
 
-# Project Structure
-
+```bash
+git clone https://github.com/Dashwanth15/cpu-fetch-decode-execute-simulator.git
