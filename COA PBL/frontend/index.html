@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COA CPU Simulator — Instruction Fetch-Decode-Execute</title>
+  <meta name="description"
+    content="Hardware-accurate interactive CPU simulator visualizing the Fetch-Decode-Execute cycle with RTL micro-operations and control signals." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js — lightweight interactive charts for Performance Analysis -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ HEADER ═══════ -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-chip">
+          <span class="chip-pin"></span><span class="chip-pin"></span>
+          <span class="chip-body">CPU</span>
+          <span class="chip-pin"></span><span class="chip-pin"></span>
+        </div>
+        <div class="logo-text">
+          <h1>COA Simulator</h1>
+          <p>Fetch · Decode · Execute</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <span class="badge badge-arch">Von Neumann</span>
+        <span class="badge badge-isa">16-bit ISA</span>
+        <span class="badge badge-mem">256-word RAM</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════ TAB BAR ════════════════ -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" id="tab-btn-sim" role="tab" aria-selected="true">
+      <span class="tab-icon">⚡</span> Simulator
+    </button>
+    <button class="tab-btn" id="tab-btn-perf" role="tab" aria-selected="false">
+      <span class="tab-icon">📊</span> Performance Analysis
+      <span class="tab-badge" id="tab-perf-badge" style="display:none">NEW</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ MAIN ════════ -->
+  <div id="panel-simulator">
+    <main class="layout">
+
+      <!-- ── LEFT PANEL: Controls + Architecture Info ─────────────────────── -->
+      <aside class="panel panel-left">
+
+        <!-- Program Selector -->
+        <section class="card" id="program-selector">
+          <h2 class="card-title"><span class="icon">⚙</span> Program</h2>
+          <div class="program-list" id="program-list">
+            <div class="skeleton-list">
+              <div class="skeleton"></div>
+              <div class="skeleton"></div>
+            </div>
+          </div>
+          <button class="btn-run" id="btn-run" disabled>
+            <span class="btn-icon">▶</span> Run Simulation
+          </button>
+          <div class="program-desc" id="program-desc"></div>
+        </section>
+
+        <!-- ── Custom Arithmetic Operation ────────────────────────────── -->
+        <section class="card" id="custom-card">
+          <h2 class="card-title"><span class="icon">🧮</span> Custom Arithmetic</h2>
+
+          <!-- Operand Inputs -->
+          <div class="custom-inputs">
+            <div class="custom-input-group">
+              <label class="custom-label" for="input-a">Operand A</label>
+              <input type="number" id="input-a" class="custom-input" min="0" max="65535" placeholder="0–65535"
+                value="7" />
+            </div>
+            <div class="custom-input-group">
+              <label class="custom-label" for="input-b">Operand B</label>
+              <input type="number" id="input-b" class="custom-input" min="0" max="65535" placeholder="0–65535"
+                value="3" />
+            </div>
+          </div>
+
+          <!-- Operation Selector -->
+          <div class="op-toggle-label">Operation</div>
+          <div class="op-toggle-group" id="op-toggle-group">
+            <button class="op-toggle op-add active" data-op="ADD" id="op-ADD">ADD</button>
+            <button class="op-toggle op-sub" data-op="SUB" id="op-SUB">SUB</button>
+            <button class="op-toggle op-mul" data-op="MUL" id="op-MUL">MUL</button>
+            <button class="op-toggle op-div" data-op="DIV" id="op-DIV">DIV</button>
+          </div>
+
+          <!-- Algorithm info -->
+          <div class="algo-info" id="algo-info">
+            <span class="algo-badge" id="algo-badge">CLEAR → LOAD A → ADD B → STORE RESULT → HALT</span>
+          </div>
+
+          <!-- Run button -->
+          <button class="btn-run-custom" id="btn-run-custom">
+            <span class="btn-icon">⚡</span> Run Operation
+          </button>
+
+          <!-- Result Display -->
+          <div class="custom-result" id="custom-result" style="display:none">
+            <div class="res-row">
+              <span class="res-label">Result</span>
+              <span class="res-hex" id="res-hex">----</span>
+            </div>
+            <div class="res-row">
+              <span class="res-label">Binary</span>
+              <span class="res-bin" id="res-bin">---- ---- ---- ----</span>
+            </div>
+            <div class="res-row">
+              <span class="res-label">M[032h]</span>
+              <span class="res-mem" id="res-mem">0000</span>
+            </div>
+          </div>
+
+          <!-- Error Display -->
+          <div class="custom-error" id="custom-error" style="display:none">
+            <span class="err-icon">⚠</span>
+            <span id="custom-error-msg">Division by zero</span>
+          </div>
+        </section>
+
+        <!-- Architecture Overview (static) -->
+        <section class="card" id="arch-card">
+          <h2 class="card-title"><span class="icon">🔲</span> Architecture</h2>
+          <div class="arch-table">
+            <div class="arch-row header-row"><span>Register</span><span>Width</span><span>Description</span></div>
+            <div class="arch-row"><span class="reg-name">PC</span><span class="reg-bits">12-bit</span><span>Program
+                Counter</span></div>
+            <div class="arch-row"><span class="reg-name">IR</span><span class="reg-bits">16-bit</span><span>Instruction
+                Register</span></div>
+            <div class="arch-row"><span class="reg-name">AR</span><span class="reg-bits">12-bit</span><span>Address
+                Register (MAR)</span></div>
+            <div class="arch-row"><span class="reg-name">DR</span><span class="reg-bits">16-bit</span><span>Data
+                Register
+                (MDR)</span></div>
+            <div class="arch-row"><span class="reg-name">AC</span><span
+                class="reg-bits">16-bit</span><span>Accumulator</span></div>
+            <div class="arch-row"><span class="reg-name">TR</span><span class="reg-bits">16-bit</span><span>Temporary
+                Register</span></div>
+            <div class="arch-row"><span class="reg-name">Z</span><span class="reg-bits">1-bit</span><span>Zero
+                Flag</span>
+            </div>
+          </div>
+          <div class="instr-format">
+            <h3>Instruction Format</h3>
+            <div class="bit-diagram">
+              <div class="bit-field bit-i">I<br /><small>15</small></div>
+              <div class="bit-field bit-op">Opcode [3]<br /><small>14–12</small></div>
+              <div class="bit-field bit-addr">Address [12]<br /><small>11–0</small></div>
+            </div>
+          </div>
+          <div class="opcode-table">
+            <h3>Opcode Table</h3>
+            <div class="opcode-grid">
+              <span class="op-cell"><code>000</code> LOAD</span>
+              <span class="op-cell"><code>001</code> STORE</span>
+              <span class="op-cell"><code>010</code> ADD</span>
+              <span class="op-cell"><code>011</code> SUB</span>
+              <span class="op-cell"><code>100</code> BRANCH</span>
+              <span class="op-cell"><code>101</code> BIZ</span>
+              <span class="op-cell"><code>110</code> CLEAR</span>
+              <span class="op-cell"><code>111</code> HALT</span>
+            </div>
+          </div>
+        </section>
+
+      </aside>
+
+      <!-- ── CENTER PANEL: Trace Viewer ───────────────────────────────────── -->
+      <section class="panel panel-center">
+
+        <!-- Stats bar -->
+        <div class="stats-bar" id="stats-bar" style="display:none">
+          <div class="stat">
+            <span class="stat-val" id="stat-cycles">—</span>
+            <span class="stat-label">Clock Cycles</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="stat-instrs">—</span>
+            <span class="stat-label">Instructions</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="stat-result">—</span>
+            <span class="stat-label">Final Result</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val" id="stat-status">—</span>
+            <span class="stat-label">Status</span>
+          </div>
+        </div>
+
+        <!-- Playback controls -->
+        <div class="playback-bar" id="playback-bar" style="display:none">
+          <button class="pb-btn" id="btn-first" title="First">⏮</button>
+          <button class="pb-btn" id="btn-prev" title="Previous">◀</button>
+          <div class="progress-wrap">
+            <input type="range" id="cycle-slider" min="0" value="0" />
+            <div class="slider-labels">
+              <span>Cycle <span id="lbl-current">1</span></span>
+              <span>of <span id="lbl-total">0</span></span>
+            </div>
+          </div>
+          <button class="pb-btn" id="btn-next" title="Next">▶</button>
+          <button class="pb-btn" id="btn-last" title="Last">⏭</button>
+          <button class="pb-btn pb-play" id="btn-play" title="Auto-play">▶▶</button>
+          <div class="speed-wrap">
+            <label>Speed</label>
+            <select id="speed-select">
+              <option value="800">0.5x</option>
+              <option value="500" selected>1x</option>
+              <option value="250">2x</option>
+              <option value="100">5x</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Clock cycle card -->
+        <div class="cycle-display" id="cycle-display">
+          <div class="empty-state" id="empty-state">
+            <div class="empty-icon">⚡</div>
+            <h3>Select a program and click Run</h3>
+            <p>The full clock-accurate RTL trace will appear here, cycle by cycle.</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── RIGHT PANEL: Registers + Memory ──────────────────────────────── -->
+      <aside class="panel panel-right">
+
+        <!-- Register File -->
+        <section class="card" id="reg-card">
+          <h2 class="card-title"><span class="icon">📋</span> Register File</h2>
+          <div class="reg-file" id="reg-file">
+            <div class="reg-row" id="r-PC"><span class="rn">PC</span><span class="rv mono">000</span><span
+                class="rb">000000000000</span></div>
+            <div class="reg-row" id="r-IR"><span class="rn">IR</span><span class="rv mono">0000</span><span
+                class="rb ir-bits">0 000 0000 0000 0000</span></div>
+            <div class="reg-row" id="r-AR"><span class="rn">AR</span><span class="rv mono">000</span><span
+                class="rb">000000000000</span></div>
+            <div class="reg-row" id="r-DR"><span class="rn">DR</span><span class="rv mono">0000</span><span
+                class="rb">0000000000000000</span></div>
+            <div class="reg-row" id="r-AC"><span class="rn">AC</span><span class="rv mono">0000</span><span
+                class="rb">0000000000000000</span></div>
+            <div class="reg-row" id="r-TR"><span class="rn">TR</span><span class="rv mono">0000</span><span
+                class="rb">0000000000000000</span></div>
+            <div class="reg-row reg-flag" id="r-Z"><span class="rn">Z</span><span class="rv mono flag-val"
+                id="flag-Z">0</span><span class="rb">Zero Flag</span></div>
+          </div>
+        </section>
+
+        <!-- Memory Panel -->
+        <section class="card" id="mem-card">
+          <h2 class="card-title"><span class="icon">💾</span> Memory</h2>
+          <div class="mem-filter">
+            <label><input type="checkbox" id="mem-nonzero" checked /> Non-zero only</label>
+            <label><input type="checkbox" id="mem-highlight" checked /> Highlight AR</label>
+          </div>
+          <div class="mem-grid" id="mem-grid">
+            <p class="mem-empty">Run a simulation to see memory.</p>
+          </div>
+        </section>
+
+      </aside>
+
+    </main>
+  </div><!-- end #panel-simulator -->
+
+  <!-- ═══════════════════════════════════════════ PERFORMANCE PANEL ═══════ -->
+  <div id="panel-performance" style="display:none">
+    <section class="perf-panel">
+
+      <!-- Header -->
+      <div class="perf-header">
+        <div>
+          <h2 class="perf-title">📊 Performance Analysis</h2>
+          <p class="perf-subtitle" id="perf-prog-name">Run a simulation to see metrics</p>
+        </div>
+        <span class="perf-status-badge badge-ok" id="perf-status-badge" style="display:none"></span>
+      </div>
+
+      <!-- Loading indicator (shown while fetch is in progress) -->
+      <div class="perf-loading" id="perf-loading" style="display:none">
+        <div class="perf-spinner"></div>
+        <span>Computing performance metrics…</span>
+      </div>
+
+      <!-- ── Metric Cards ────────────────────────────────────────────────── -->
+      <div class="perf-body" id="perf-body">
+        <div class="perf-metrics-grid">
+
+          <!-- Card: Total Instructions -->
+          <div class="metric-card">
+            <div class="metric-icon">📋</div>
+            <div class="metric-val" id="perf-total-instrs">—</div>
+            <div class="metric-label">Total Instructions</div>
+          </div>
+
+          <!-- Card: Total Clock Cycles -->
+          <div class="metric-card">
+            <div class="metric-icon">🕐</div>
+            <div class="metric-val" id="perf-total-cycles">—</div>
+            <div class="metric-label">Total Clock Cycles</div>
+          </div>
+
+          <!-- Card: CPI -->
+          <div class="metric-card metric-card-accent">
+            <div class="metric-icon">⚙️</div>
+            <div class="metric-val" id="perf-cpi">—</div>
+            <div class="metric-label">Cycles Per Instruction (CPI)</div>
+            <div class="metric-formula">= Total Cycles ÷ Total Instructions</div>
+          </div>
+
+          <!-- Card: Throughput -->
+          <div class="metric-card metric-card-accent">
+            <div class="metric-icon">🚀</div>
+            <div class="metric-val" id="perf-throughput">—</div>
+            <div class="metric-label">Instruction Throughput</div>
+            <div class="metric-formula">= Instructions ÷ Total Cycles</div>
+          </div>
+
+        </div><!-- end .perf-metrics-grid -->
+
+        <!-- ── Cycle Breakdown Stats ──────────────────────────────────────── -->
+        <div class="perf-breakdown-bar">
+          <div class="breakdown-title">Cycle Breakdown by Pipeline Stage</div>
+          <div class="breakdown-stages">
+
+            <div class="stage-stat stage-fetch">
+              <div class="stage-dot"></div>
+              <div class="stage-info">
+                <span class="stage-name">Fetch</span>
+                <span class="stage-count" id="perf-fetch-count">0</span>
+                <span class="stage-pct" id="perf-fetch-pct">0%</span>
+              </div>
+              <div class="stage-bar-wrap">
+                <div class="stage-bar fetch-bar" id="fetch-bar-fill"></div>
+              </div>
+            </div>
+
+            <div class="stage-stat stage-decode">
+              <div class="stage-dot"></div>
+              <div class="stage-info">
+                <span class="stage-name">Decode</span>
+                <span class="stage-count" id="perf-decode-count">0</span>
+                <span class="stage-pct" id="perf-decode-pct">0%</span>
+              </div>
+              <div class="stage-bar-wrap">
+                <div class="stage-bar decode-bar" id="decode-bar-fill"></div>
+              </div>
+            </div>
+
+            <div class="stage-stat stage-execute">
+              <div class="stage-dot"></div>
+              <div class="stage-info">
+                <span class="stage-name">Execute</span>
+                <span class="stage-count" id="perf-exec-count">0</span>
+                <span class="stage-pct" id="perf-exec-pct">0%</span>
+              </div>
+              <div class="stage-bar-wrap">
+                <div class="stage-bar exec-bar" id="exec-bar-fill"></div>
+              </div>
+            </div>
+
+          </div><!-- end .breakdown-stages -->
+        </div><!-- end .perf-breakdown-bar -->
+
+        <!-- ── Charts Grid ────────────────────────────────────────────────── -->
+        <div class="charts-grid">
+
+          <!-- A. Bar Chart -->
+          <div class="chart-card chart-bar-card">
+            <div class="chart-label">A · Stage Cycles per Instruction</div>
+            <div class="chart-container">
+              <canvas id="chart-bar"></canvas>
+            </div>
+          </div>
+
+          <!-- B. Pie / Doughnut Chart -->
+          <div class="chart-card chart-pie-card">
+            <div class="chart-label">B · Pipeline Stage Distribution</div>
+            <div class="chart-container chart-container-sq">
+              <canvas id="chart-pie"></canvas>
+            </div>
+          </div>
+
+          <!-- C. Line Chart -->
+          <div class="chart-card chart-line-card">
+            <div class="chart-label">C · Execution Timeline vs Clock Cycles</div>
+            <div class="chart-container">
+              <canvas id="chart-line"></canvas>
+            </div>
+          </div>
+
+        </div><!-- end .charts-grid -->
+      </div><!-- end #perf-body -->
+
+    </section>
+  </div><!-- end #panel-performance -->
+
+  <!-- ═══════════════════════════════════════════════════════ LOADING ═══ -->
+  <div class="loading-overlay" id="loading-overlay" style="display:none">
+    <div class="loading-box">
+      <div class="cpu-anim">
+        <div class="cpu-core"></div>
+        <div class="cpu-ring r1"></div>
+        <div class="cpu-ring r2"></div>
+      </div>
+      <p>Simulating CPU…</p>
+      <small>Running clock cycles</small>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/performance.js"></script>
+</body>
+
+</html>

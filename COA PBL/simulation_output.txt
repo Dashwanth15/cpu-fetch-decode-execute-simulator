@@ -1,0 +1,98 @@
+﻿========================================================================
+  COA PROJECT ù CPU INSTRUCTION FETCHûDECODEûEXECUTE SIMULATOR
+  Program : Sum of integers 1 to 5  (loop + branch)
+  Model   : Von Neumann | RTL Level | Clock-accurate
+========================================================================
+========================================================================
+  CPU SIMULATION START
+  Von Neumann  |  16-bit ISA  |  256-word Memory
+========================================================================
+Memory Dump:
+  M[000] = 6000  (0110000000000000)
+  M[001] = 0020  (0000000000100000)
+  M[002] = 2021  (0010000000100001)
+  M[003] = 1020  (0001000000100000)
+  M[004] = 0021  (0000000000100001)
+  M[005] = 3022  (0011000000100010)
+  M[006] = 1021  (0001000000100001)
+  M[007] = 5009  (0101000000001001)
+  M[008] = 4002  (0100000000000010)
+  M[009] = 7000  (0111000000000000)
+  M[00A] = 0000  (0000000000000000)
+  M[00B] = 0000  (0000000000000000)
+  M[00C] = 0000  (0000000000000000)
+  M[00D] = 0000  (0000000000000000)
+  M[00E] = 0000  (0000000000000000)
+  M[00F] = 0000  (0000000000000000)
+  M[010] = 0000  (0000000000000000)
+  M[011] = 0000  (0000000000000000)
+  M[012] = 0000  (0000000000000000)
+  M[013] = 0000  (0000000000000000)
+  M[014] = 0000  (0000000000000000)
+  M[015] = 0000  (0000000000000000)
+  M[016] = 0000  (0000000000000000)
+  M[017] = 0000  (0000000000000000)
+  M[018] = 0000  (0000000000000000)
+  M[019] = 0000  (0000000000000000)
+  M[01A] = 0000  (0000000000000000)
+  M[01B] = 0000  (0000000000000000)
+  M[01C] = 0000  (0000000000000000)
+  M[01D] = 0000  (0000000000000000)
+========================================================================
+python : Traceback (most 
+recent call last):
+At line:1 char:1
++ python "d:\Desktop\4th 
+semister\COA\COA 
+PBL\cpu_simulator.py" 2>&1 | 
+ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Traceba  
+  ck (most recent call las   
+ t)::String) [], RemoteEx    
+ception
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+  File "d:\Desktop\4th 
+semister\COA\COA 
+PBL\cpu_simulator.py", line 
+780, in <module>
+    main()
+  File "d:\Desktop\4th 
+semister\COA\COA 
+PBL\cpu_simulator.py", line 
+767, in main
+    cpu.run(max_cycles=500)
+  File "d:\Desktop\4th 
+semister\COA\COA 
+PBL\cpu_simulator.py", line 
+334, in run
+    self._execute_one_instruc
+tion()
+  File "d:\Desktop\4th 
+semister\COA\COA 
+PBL\cpu_simulator.py", line 
+358, in 
+_execute_one_instruction
+    print(f"\n{'\u2500' * 
+72}")
+  File "C:\Program Files\Wind
+owsApps\PythonSoftwareFoundat
+ion.Python.3.12_3.12.2800.0_x
+64__qbz5n2kfra8p0\Lib\encodin
+gs\cp1252.py", line 19, in 
+encode
+    return codecs.charmap_enc
+ode(input,self.errors,encodin
+g_table)[0]
+           ^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
+UnicodeEncodeError: 
+'charmap' codec can't encode 
+characters in position 2-73: 
+character maps to <undefined>
