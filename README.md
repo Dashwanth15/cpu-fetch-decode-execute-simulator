@@ -10,11 +10,11 @@ This project was developed as part of a **Computer Organization and Architecture
 
 ## CPU Simulator Interface
 
-![CPU Simulator](screenshots/image2.png)
+![CPU Simulator](Screenshots/image2.png)
 
 ## Performance Analysis Dashboard
 
-![Performance Analysis](screenshots/image1.png)
+![Performance Analysis](Screenshots/image1.png)
 
 ---
 
@@ -101,32 +101,6 @@ Tinkercad Circuits
 
 ---
 
-# Project Structure
-cpu-fetch-decode-execute-simulator
-│
-├── screenshots
-│ ├── image1.png
-│ └── image2.png
-│
-├── simulation
-│ └── tinkercad_link.txt
-│
-├── backend
-│
-├── frontend
-│
-├── main.py
-├── cpu_simulator.py
-├── requirements.txt
-└── README.md
-
----
-
-# Installation
-
-Clone the repository
-
-```bash
 ## Installation and Running the Project
 
 Clone the repository
@@ -186,3 +160,7 @@ https://github.com/Dashwanth15
 ## License
 
 This project is released under the **MIT License**.
+
+
+# Project Structure
+
